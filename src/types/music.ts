@@ -6,6 +6,7 @@ export interface Track {
   thumbnail: string;
   isCached: boolean;
   cachedAt?: Date;
+  youtubeId?: string;
 }
 
 export interface PlayerState {
