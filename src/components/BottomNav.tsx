@@ -1,7 +1,7 @@
-import { Search, Library, Settings, WifiOff } from 'lucide-react';
+import { Search, Library, Settings, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-type TabType = 'search' | 'library' | 'settings';
+type TabType = 'search' | 'library' | 'favorites' | 'settings';
 
 interface BottomNavProps {
   activeTab: TabType;
@@ -10,7 +10,8 @@ interface BottomNavProps {
 
 const tabs = [
   { id: 'search' as TabType, icon: Search, label: 'Zoeken' },
-  { id: 'library' as TabType, icon: WifiOff, label: 'Offline' },
+  { id: 'library' as TabType, icon: Library, label: 'Bibliotheek' },
+  { id: 'favorites' as TabType, icon: Heart, label: 'Favorieten' },
   { id: 'settings' as TabType, icon: Settings, label: 'Instellingen' },
 ];
 
@@ -28,18 +29,18 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => onTabChange(tab.id)}
-              className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-colors ${
+              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors ${
                 isActive 
                   ? 'text-primary' 
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <div className="relative">
-                <Icon className="h-6 w-6" />
+                <Icon className="h-5 w-5" />
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+                    className="absolute -top-1 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary"
                   />
                 )}
               </div>
