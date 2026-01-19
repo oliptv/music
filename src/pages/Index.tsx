@@ -5,6 +5,7 @@ import { SettingsView } from '@/components/views/SettingsView';
 import { BottomNav } from '@/components/BottomNav';
 import { MiniPlayer } from '@/components/MiniPlayer';
 import { FullPlayer } from '@/components/FullPlayer';
+import { YouTubePlayer } from '@/components/YouTubePlayer';
 
 type TabType = 'search' | 'library' | 'settings';
 
@@ -27,6 +28,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Hidden YouTube Player for audio playback */}
+      <YouTubePlayer />
+      
       <main className="max-w-2xl mx-auto px-4 py-6">
         {renderView()}
       </main>

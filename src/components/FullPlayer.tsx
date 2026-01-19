@@ -15,7 +15,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMusicStore } from '@/store/musicStore';
 import { Slider } from '@/components/ui/slider';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface FullPlayerProps {
   isOpen: boolean;
@@ -42,17 +42,6 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
   
   const { currentTrack, isPlaying, progress, volume, shuffle, repeat } = playerState;
   const [localProgress, setLocalProgress] = useState(progress);
-
-  // Simulate playback progress
-  useEffect(() => {
-    if (!isPlaying || !currentTrack) return;
-    
-    const interval = setInterval(() => {
-      setProgress(Math.min(progress + 0.5, 100));
-    }, (currentTrack.duration / 100) * 500);
-
-    return () => clearInterval(interval);
-  }, [isPlaying, progress, currentTrack, setProgress]);
 
   useEffect(() => {
     setLocalProgress(progress);
@@ -115,15 +104,23 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
                 isPlaying ? 'animate-pulse-glow' : ''
               }`}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center">
-                <motion.span 
-                  className="text-8xl font-bold gradient-text"
-                  animate={{ rotate: isPlaying ? 360 : 0 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                >
-                  {currentTrack.title.charAt(0)}
-                </motion.span>
-              </div>
+              {currentTrack.thumbnail ? (
+                <img 
+                  src={currentTrack.thumbnail} 
+                  alt={currentTrack.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center">
+                  <motion.span 
+                    className="text-8xl font-bold gradient-text"
+                    animate={{ rotate: isPlaying ? 360 : 0 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                  >
+                    {currentTrack.title.charAt(0)}
+                  </motion.span>
+                </div>
+              )}
               <div className="absolute inset-0 glow-primary opacity-50" />
             </motion.div>
 
@@ -132,10 +129,10 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="mt-8 text-center"
+              className="mt-8 text-center max-w-md px-4"
             >
-              <h2 className="text-2xl font-bold">{currentTrack.title}</h2>
-              <p className="text-lg text-muted-foreground mt-1">{currentTrack.artist}</p>
+              <h2 className="text-2xl font-bold line-clamp-2">{currentTrack.title}</h2>
+              <p className="text-lg text-muted-foreground mt-1 truncate">{currentTrack.artist}</p>
             </motion.div>
 
             {/* Progress Bar */}

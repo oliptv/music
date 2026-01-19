@@ -1,15 +1,6 @@
 import { create } from 'zustand';
 import { Track, PlayerState, CacheSettings } from '@/types/music';
-
-// Mock data for demonstration
-const mockTracks: Track[] = [
-  { id: '1', title: 'Midnight Dreams', artist: 'Aurora Beats', duration: 234, thumbnail: '', isCached: true, cachedAt: new Date() },
-  { id: '2', title: 'Electric Sunrise', artist: 'Neon Wave', duration: 198, thumbnail: '', isCached: true, cachedAt: new Date(Date.now() - 86400000) },
-  { id: '3', title: 'Ocean Waves', artist: 'Calm Collective', duration: 312, thumbnail: '', isCached: false },
-  { id: '4', title: 'City Lights', artist: 'Urban Echo', duration: 267, thumbnail: '', isCached: true, cachedAt: new Date(Date.now() - 172800000) },
-  { id: '5', title: 'Forest Rain', artist: 'Nature Sounds', duration: 445, thumbnail: '', isCached: false },
-  { id: '6', title: 'Cosmic Journey', artist: 'Space Ambient', duration: 389, thumbnail: '', isCached: true, cachedAt: new Date(Date.now() - 259200000) },
-];
+import { searchYouTube } from '@/lib/youtube';
 
 interface MusicStore {
   // Player state
@@ -20,18 +11,21 @@ interface MusicStore {
   setVolume: (volume: number) => void;
   toggleShuffle: () => void;
   cycleRepeat: () => void;
+  setIsPlaying: (isPlaying: boolean) => void;
   
   // Library
   tracks: Track[];
   cachedTracks: Track[];
   searchResults: Track[];
   searchQuery: string;
+  isSearching: boolean;
   setSearchQuery: (query: string) => void;
-  searchTracks: (query: string) => void;
+  searchTracks: (query: string) => Promise<void>;
   
   // Cache management
   cacheSettings: CacheSettings;
   updateCacheSettings: (settings: Partial<CacheSettings>) => void;
+  addToCache: (track: Track) => void;
   removeFromCache: (trackId: string) => void;
   clearOldCache: () => void;
   getCacheSize: () => number;
@@ -63,6 +57,10 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
     playerState: { ...state.playerState, isPlaying: !state.playerState.isPlaying }
   })),
   
+  setIsPlaying: (isPlaying) => set((state) => ({
+    playerState: { ...state.playerState, isPlaying }
+  })),
+  
   setProgress: (progress) => set((state) => ({
     playerState: { ...state.playerState, progress }
   })),
@@ -83,23 +81,46 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
   }),
   
   // Library
-  tracks: mockTracks,
-  cachedTracks: mockTracks.filter(t => t.isCached),
+  tracks: [],
+  cachedTracks: [],
   searchResults: [],
   searchQuery: '',
+  isSearching: false,
   
   setSearchQuery: (query) => set({ searchQuery: query }),
   
-  searchTracks: (query) => set((state) => {
+  searchTracks: async (query) => {
     if (!query.trim()) {
-      return { searchResults: [] };
+      set({ searchResults: [], isSearching: false });
+      return;
     }
-    const results = state.tracks.filter(
-      t => t.title.toLowerCase().includes(query.toLowerCase()) ||
-           t.artist.toLowerCase().includes(query.toLowerCase())
-    );
-    return { searchResults: results };
-  }),
+    
+    set({ isSearching: true });
+    
+    try {
+      const results = await searchYouTube(query);
+      const cachedTracks = get().cachedTracks;
+      
+      const tracks: Track[] = results.map(result => {
+        const cached = cachedTracks.find(t => t.id === result.id);
+        return {
+          id: result.id,
+          title: result.title,
+          artist: result.channelTitle,
+          duration: result.duration,
+          thumbnail: result.thumbnail,
+          isCached: !!cached,
+          cachedAt: cached?.cachedAt,
+          youtubeId: result.id,
+        };
+      });
+      
+      set({ searchResults: tracks, isSearching: false });
+    } catch (error) {
+      console.error('Search error:', error);
+      set({ searchResults: [], isSearching: false });
+    }
+  },
   
   // Cache management
   cacheSettings: {
@@ -113,24 +134,32 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
     cacheSettings: { ...state.cacheSettings, ...settings }
   })),
   
+  addToCache: (track) => set((state) => {
+    const isAlreadyCached = state.cachedTracks.some(t => t.id === track.id);
+    if (isAlreadyCached) return state;
+    
+    const cachedTrack = { ...track, isCached: true, cachedAt: new Date() };
+    return {
+      cachedTracks: [...state.cachedTracks, cachedTrack],
+      searchResults: state.searchResults.map(t => 
+        t.id === track.id ? cachedTrack : t
+      ),
+    };
+  }),
+  
   removeFromCache: (trackId) => set((state) => ({
-    tracks: state.tracks.map(t => 
+    cachedTracks: state.cachedTracks.filter(t => t.id !== trackId),
+    searchResults: state.searchResults.map(t => 
       t.id === trackId ? { ...t, isCached: false, cachedAt: undefined } : t
     ),
-    cachedTracks: state.cachedTracks.filter(t => t.id !== trackId),
   })),
   
   clearOldCache: () => set((state) => {
     const cutoff = Date.now() - (state.cacheSettings.cleanOlderThanDays * 24 * 60 * 60 * 1000);
-    const updatedTracks = state.tracks.map(t => {
-      if (t.cachedAt && new Date(t.cachedAt).getTime() < cutoff) {
-        return { ...t, isCached: false, cachedAt: undefined };
-      }
-      return t;
-    });
     return {
-      tracks: updatedTracks,
-      cachedTracks: updatedTracks.filter(t => t.isCached),
+      cachedTracks: state.cachedTracks.filter(t => 
+        t.cachedAt && new Date(t.cachedAt).getTime() >= cutoff
+      ),
     };
   }),
   
@@ -154,9 +183,20 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
   playNext: () => {
     const state = get();
     const currentTrack = state.playerState.currentTrack;
+    
+    // Check queue first
+    if (state.queue.length > 0) {
+      const nextTrack = state.queue[0];
+      set({ queue: state.queue.slice(1) });
+      state.setCurrentTrack(nextTrack);
+      return;
+    }
+    
     if (!currentTrack) return;
     
-    const allTracks = state.tracks;
+    const allTracks = state.searchResults.length > 0 ? state.searchResults : state.cachedTracks;
+    if (allTracks.length === 0) return;
+    
     const currentIndex = allTracks.findIndex(t => t.id === currentTrack.id);
     
     if (state.playerState.shuffle) {
@@ -173,7 +213,9 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
     const currentTrack = state.playerState.currentTrack;
     if (!currentTrack) return;
     
-    const allTracks = state.tracks;
+    const allTracks = state.searchResults.length > 0 ? state.searchResults : state.cachedTracks;
+    if (allTracks.length === 0) return;
+    
     const currentIndex = allTracks.findIndex(t => t.id === currentTrack.id);
     const prevIndex = currentIndex === 0 ? allTracks.length - 1 : currentIndex - 1;
     state.setCurrentTrack(allTracks[prevIndex]);
