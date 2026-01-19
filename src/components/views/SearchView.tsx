@@ -2,21 +2,23 @@ import { motion } from 'framer-motion';
 import { useMusicStore } from '@/store/musicStore';
 import { SearchBar } from '@/components/SearchBar';
 import { TrackCard } from '@/components/TrackCard';
-import { Music, Search as SearchIcon } from 'lucide-react';
+import { Music, Search as SearchIcon, MoreVertical } from 'lucide-react';
+import { AppLogo } from '@/components/AppLogo';
 
 export const SearchView = () => {
   const { searchResults, searchQuery, isSearching, cachedTracks } = useMusicStore();
 
   return (
     <div className="flex flex-col gap-6 pb-40">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="space-y-2"
-      >
-        <h1 className="text-3xl font-bold gradient-text">StreamCache</h1>
-        <p className="text-muted-foreground">Zoek en stream muziek van YouTube</p>
-      </motion.div>
+      <div className="flex items-center justify-between">
+        <div className="flex-1" />
+        <AppLogo size="md" />
+        <div className="flex-1 flex justify-end">
+          <button className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+            <MoreVertical className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
 
       <SearchBar />
 
@@ -27,7 +29,7 @@ export const SearchView = () => {
             animate={{ opacity: 1 }}
             className="text-sm text-muted-foreground"
           >
-            {searchResults.length} resultaten voor "{searchQuery}"
+            {searchResults.length} resultaten van YouTube
           </motion.p>
         )}
 
@@ -37,7 +39,7 @@ export const SearchView = () => {
             animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center py-16 text-center"
           >
-            <div className="h-16 w-16 rounded-full border-4 border-primary/30 border-t-primary animate-spin mb-4" />
+            <div className="h-16 w-16 rounded-full border-4 border-cache-loading/30 border-t-cache-loading animate-spin mb-4" style={{ borderTopColor: 'hsl(0 72% 50%)' }} />
             <p className="text-muted-foreground">Zoeken op YouTube...</p>
           </motion.div>
         ) : searchResults.length > 0 ? (

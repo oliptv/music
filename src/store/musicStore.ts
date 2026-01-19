@@ -16,11 +16,17 @@ interface MusicStore {
   // Library
   tracks: Track[];
   cachedTracks: Track[];
+  favorites: Track[];
   searchResults: Track[];
   searchQuery: string;
   isSearching: boolean;
   setSearchQuery: (query: string) => void;
   searchTracks: (query: string) => Promise<void>;
+  
+  // Favorites
+  addToFavorites: (track: Track) => void;
+  removeFromFavorites: (trackId: string) => void;
+  isFavorite: (trackId: string) => boolean;
   
   // Cache management
   cacheSettings: CacheSettings;
@@ -83,6 +89,7 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
   // Library
   tracks: [],
   cachedTracks: [],
+  favorites: [],
   searchResults: [],
   searchQuery: '',
   isSearching: false,
@@ -121,6 +128,19 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
       set({ searchResults: [], isSearching: false });
     }
   },
+  
+  // Favorites
+  addToFavorites: (track) => set((state) => {
+    const isAlreadyFavorite = state.favorites.some(t => t.id === track.id);
+    if (isAlreadyFavorite) return state;
+    return { favorites: [...state.favorites, track] };
+  }),
+  
+  removeFromFavorites: (trackId) => set((state) => ({
+    favorites: state.favorites.filter(t => t.id !== trackId)
+  })),
+  
+  isFavorite: (trackId) => get().favorites.some(t => t.id === trackId),
   
   // Cache management
   cacheSettings: {

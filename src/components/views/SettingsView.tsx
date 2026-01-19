@@ -1,75 +1,113 @@
 import { motion } from 'framer-motion';
 import { useMusicStore } from '@/store/musicStore';
-import { Settings, HardDrive, Wifi, Trash2, Clock } from 'lucide-react';
+import { HardDrive, Wifi, Trash2, Clock } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { AppLogo } from '@/components/AppLogo';
 
 export const SettingsView = () => {
-  const { cacheSettings, updateCacheSettings, getCacheSize } = useMusicStore();
+  const { cacheSettings, updateCacheSettings, getCacheSize, clearOldCache } = useMusicStore();
   const cacheSize = getCacheSize();
+  const maxSizeMB = cacheSettings.maxSizeGB * 1024;
+  const usagePercent = (cacheSize / maxSizeMB) * 100;
 
   return (
     <div className="flex flex-col gap-6 pb-40">
+      <div className="flex justify-center">
+        <AppLogo size="md" />
+      </div>
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="space-y-2"
+        className="text-center"
       >
-        <div className="flex items-center gap-3">
-          <Settings className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">Instellingen</h1>
-        </div>
-        <p className="text-muted-foreground">
-          Beheer je cache en streaming voorkeuren
-        </p>
+        <h1 className="text-2xl font-bold">Instellingen</h1>
       </motion.div>
 
-      {/* Cache Settings */}
+      {/* Cache Storage */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="glass-card rounded-2xl p-6 space-y-6"
       >
-        <div className="flex items-center gap-3 mb-4">
-          <HardDrive className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">Cache Beheer</h2>
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-primary/20">
+            <HardDrive className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">Cache Opslag</h2>
+            <p className="text-sm text-muted-foreground">Beheer je offline opslag</p>
+          </div>
         </div>
 
-        {/* Cache Size Limit */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="cache-limit" className="text-foreground">
-              Maximale cache grootte
-            </Label>
-            <span className="text-primary font-medium">{cacheSettings.maxSizeGB} GB</span>
+        {/* Usage Stats */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Gebruikt: {cacheSize} MB</span>
+            <span>Limiet: {maxSizeMB} MB</span>
           </div>
-          <Slider
-            id="cache-limit"
-            value={[cacheSettings.maxSizeGB]}
-            min={0.5}
-            max={10}
-            step={0.5}
-            onValueChange={(value) => updateCacheSettings({ maxSizeGB: value[0] })}
-            className="w-full"
-          />
+          <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full bg-cache-loading rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${usagePercent}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
           <p className="text-sm text-muted-foreground">
-            Huidige gebruik: {cacheSize} MB ({((cacheSize / (cacheSettings.maxSizeGB * 1024)) * 100).toFixed(1)}%)
+            0 nummers opgeslagen
           </p>
         </div>
 
-        {/* Auto Clean */}
-        <div className="flex items-center justify-between py-3 border-t border-border">
-          <div className="flex items-center gap-3">
-            <Trash2 className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <Label htmlFor="auto-clean" className="text-foreground">
-                Automatisch opschonen
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Verwijder automatisch oude cache
-              </p>
-            </div>
+        {/* Cache Limit Slider */}
+        <div className="space-y-4 pt-4 border-t border-border">
+          <div className="flex items-center justify-between">
+            <Label className="text-foreground">Cache limiet</Label>
+            <span className="text-primary font-medium">{maxSizeMB} MB</span>
+          </div>
+          <Slider
+            value={[cacheSettings.maxSizeGB]}
+            min={0.1}
+            max={2}
+            step={0.1}
+            onValueChange={(value) => updateCacheSettings({ maxSizeGB: value[0] })}
+            className="w-full [&_[role=slider]]:bg-cache-loading [&_.bg-primary]:bg-cache-loading"
+          />
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>100 MB</span>
+            <span>2 GB</span>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Auto Clean Settings */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="glass-card rounded-2xl p-6 space-y-4"
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-emerald-500/20">
+            <Clock className="h-6 w-6 text-emerald-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">Automatisch Opschonen</h2>
+            <p className="text-sm text-muted-foreground">Verwijder oude bestanden</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between py-3">
+          <div>
+            <Label htmlFor="auto-clean" className="text-foreground">
+              Automatisch opschonen
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              Verwijder oude cache automatisch
+            </p>
           </div>
           <Switch
             id="auto-clean"
@@ -78,42 +116,31 @@ export const SettingsView = () => {
           />
         </div>
 
-        {/* Clean Older Than */}
-        {cacheSettings.autoClean && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="space-y-4 pt-2"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-muted-foreground" />
-                <Label className="text-foreground">Verwijder ouder dan</Label>
-              </div>
-              <span className="text-primary font-medium">{cacheSettings.cleanOlderThanDays} dagen</span>
-            </div>
-            <Slider
-              value={[cacheSettings.cleanOlderThanDays]}
-              min={7}
-              max={90}
-              step={1}
-              onValueChange={(value) => updateCacheSettings({ cleanOlderThanDays: value[0] })}
-              className="w-full"
-            />
-          </motion.div>
-        )}
+        <Button
+          variant="outline"
+          onClick={clearOldCache}
+          className="w-full h-12 border-border hover:bg-muted"
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          Oude bestanden nu verwijderen
+        </Button>
       </motion.div>
 
       {/* Streaming Settings */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: 0.2 }}
         className="glass-card rounded-2xl p-6 space-y-4"
       >
-        <div className="flex items-center gap-3 mb-2">
-          <Wifi className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">Streaming</h2>
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-primary/20">
+            <Wifi className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">Streaming</h2>
+            <p className="text-sm text-muted-foreground">Data voorkeuren</p>
+          </div>
         </div>
 
         <div className="flex items-center justify-between py-3">
@@ -131,19 +158,6 @@ export const SettingsView = () => {
             onCheckedChange={(checked) => updateCacheSettings({ wifiOnly: checked })}
           />
         </div>
-      </motion.div>
-
-      {/* About */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="text-center py-8"
-      >
-        <p className="text-sm text-muted-foreground">StreamCache v1.0.0</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Slimme muziekspeler met offline caching
-        </p>
       </motion.div>
     </div>
   );
