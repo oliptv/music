@@ -37,14 +37,14 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
     playPrevious,
     toggleShuffle,
     cycleRepeat,
-    setProgress,
+    seekTo,
     setVolume,
     addToFavorites,
     removeFromFavorites,
     isFavorite
   } = useMusicStore();
   
-  const { currentTrack, isPlaying, progress, volume, shuffle, repeat } = playerState;
+  const { currentTrack, isPlaying, progress, volume, shuffle, repeat, isBuffering } = playerState;
   const [localProgress, setLocalProgress] = useState(progress);
 
   useEffect(() => {
@@ -265,10 +265,43 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
             className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-6"
             style={{ backgroundColor: 'hsl(222 30% 8% / 0.95)' }}
           >
-            {/* Time Display */}
-            <div className="flex justify-between mb-3 text-base font-bold" style={{ color: 'hsl(0 72% 55%)' }}>
-              <span className="bg-background/50 px-2 py-1 rounded">{formatTime(currentTime)}</span>
-              <span className="bg-background/50 px-2 py-1 rounded">{formatTime(currentTrack.duration)}</span>
+            {/* Time Display with Cache Indicator */}
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex items-center gap-2">
+                <span 
+                  className="text-base font-bold bg-background/50 px-2 py-1 rounded"
+                  style={{ color: 'hsl(0 72% 55%)' }}
+                >
+                  {formatTime(currentTime)}
+                </span>
+                {/* Cache/Loading indicator next to time */}
+                {isBuffering && (
+                  <motion.div 
+                    className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium animate-cache-pulse"
+                    style={{ backgroundColor: 'hsl(0 72% 50% / 0.3)', color: 'hsl(0 72% 55%)' }}
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                    <span>Laden...</span>
+                  </motion.div>
+                )}
+                {currentTrack.isCached && !isBuffering && (
+                  <div 
+                    className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium"
+                    style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)', color: 'hsl(0 72% 55%)' }}
+                  >
+                    <WifiOff className="h-3 w-3" />
+                    <span>Gecached</span>
+                  </div>
+                )}
+              </div>
+              <span 
+                className="text-base font-bold bg-background/50 px-2 py-1 rounded"
+                style={{ color: 'hsl(0 72% 55%)' }}
+              >
+                {formatTime(currentTrack.duration)}
+              </span>
             </div>
             
             {/* Progress Bar Track */}
@@ -280,22 +313,22 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
                 const x = e.clientX - rect.left;
                 const percentage = (x / rect.width) * 100;
                 setLocalProgress(percentage);
-                setProgress(percentage);
+                seekTo(percentage);
               }}
             >
               {/* Progress Fill */}
               <motion.div 
-                className="absolute top-0 left-0 h-full rounded-full"
+                className={`absolute top-0 left-0 h-full rounded-full ${isBuffering ? 'animate-cache-pulse' : ''}`}
                 style={{ 
                   width: `${localProgress}%`,
                   backgroundColor: 'hsl(0 72% 50%)',
-                  boxShadow: '0 0 15px hsl(0 72% 50% / 0.7)'
+                  boxShadow: isBuffering ? '0 0 20px hsl(0 72% 50% / 0.9)' : '0 0 15px hsl(0 72% 50% / 0.7)'
                 }}
               />
               
               {/* Progress Thumb */}
               <motion.div 
-                className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white"
+                className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white ${isBuffering ? 'animate-pulse' : ''}`}
                 style={{ 
                   left: `calc(${localProgress}% - 10px)`,
                   backgroundColor: 'hsl(0 72% 50%)',

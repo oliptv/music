@@ -8,6 +8,7 @@ interface YTPlayer {
   setVolume: (volume: number) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
+  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   destroy: () => void;
 }
 
@@ -61,12 +62,14 @@ export const YouTubePlayer = ({ onReady }: YouTubePlayerProps) => {
   const { 
     playerState, 
     setProgress, 
-    setIsPlaying, 
+    setIsPlaying,
+    setIsBuffering,
+    clearSeekRequest,
     playNext,
     addToCache 
   } = useMusicStore();
   
-  const { currentTrack, isPlaying, volume } = playerState;
+  const { currentTrack, isPlaying, volume, seekRequested } = playerState;
   const progressIntervalRef = useRef<number | null>(null);
 
   const updateProgress = useCallback(() => {
@@ -143,6 +146,7 @@ export const YouTubePlayer = ({ onReady }: YouTubePlayerProps) => {
           onStateChange: (event) => {
             if (event.data === window.YT.PlayerState.PLAYING) {
               setIsPlaying(true);
+              setIsBuffering(false);
               startProgressTracking();
             } else if (event.data === window.YT.PlayerState.PAUSED) {
               setIsPlaying(false);
@@ -150,6 +154,8 @@ export const YouTubePlayer = ({ onReady }: YouTubePlayerProps) => {
             } else if (event.data === window.YT.PlayerState.ENDED) {
               stopProgressTracking();
               playNext();
+            } else if (event.data === window.YT.PlayerState.BUFFERING) {
+              setIsBuffering(true);
             }
           },
         },
@@ -192,6 +198,20 @@ export const YouTubePlayer = ({ onReady }: YouTubePlayerProps) => {
       // Player not ready yet
     }
   }, [volume]);
+
+  // Handle seek requests
+  useEffect(() => {
+    if (seekRequested === undefined || !playerRef.current || !currentTrack) return;
+    
+    try {
+      const duration = playerRef.current.getDuration?.() || currentTrack.duration;
+      const seekTime = (seekRequested / 100) * duration;
+      playerRef.current.seekTo?.(seekTime, true);
+      clearSeekRequest();
+    } catch (e) {
+      // Player not ready yet
+    }
+  }, [seekRequested, currentTrack, clearSeekRequest]);
 
   return (
     <div 

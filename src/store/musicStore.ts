@@ -8,10 +8,13 @@ interface MusicStore {
   setCurrentTrack: (track: Track | null) => void;
   togglePlayPause: () => void;
   setProgress: (progress: number) => void;
+  seekTo: (progress: number) => void;
   setVolume: (volume: number) => void;
   toggleShuffle: () => void;
   cycleRepeat: () => void;
   setIsPlaying: (isPlaying: boolean) => void;
+  setIsBuffering: (isBuffering: boolean) => void;
+  clearSeekRequest: () => void;
   
   // Library
   tracks: Track[];
@@ -53,6 +56,8 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
     volume: 80,
     shuffle: false,
     repeat: 'off',
+    seekRequested: undefined,
+    isBuffering: false,
   },
   
   setCurrentTrack: (track) => set((state) => ({
@@ -69,6 +74,18 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
   
   setProgress: (progress) => set((state) => ({
     playerState: { ...state.playerState, progress }
+  })),
+  
+  seekTo: (progress) => set((state) => ({
+    playerState: { ...state.playerState, progress, seekRequested: progress }
+  })),
+  
+  setIsBuffering: (isBuffering) => set((state) => ({
+    playerState: { ...state.playerState, isBuffering }
+  })),
+  
+  clearSeekRequest: () => set((state) => ({
+    playerState: { ...state.playerState, seekRequested: undefined }
   })),
   
   setVolume: (volume) => set((state) => ({

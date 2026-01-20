@@ -16,6 +16,8 @@ export interface PlayerState {
   volume: number;
   shuffle: boolean;
   repeat: 'off' | 'one' | 'all';
+  seekRequested?: number;
+  isBuffering?: boolean;
 }
 
 export interface CacheSettings {
