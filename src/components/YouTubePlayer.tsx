@@ -175,16 +175,20 @@ export const YouTubePlayer = ({ onReady }: YouTubePlayerProps) => {
 
   // Handle play/pause
   useEffect(() => {
-    if (!playerRef.current) return;
+    if (!playerRef.current) {
+      console.log('Player not ready yet for play/pause');
+      return;
+    }
     
     try {
+      console.log('Toggling playback:', isPlaying ? 'play' : 'pause');
       if (isPlaying) {
         playerRef.current.playVideo?.();
       } else {
         playerRef.current.pauseVideo?.();
       }
     } catch (e) {
-      // Player not ready yet
+      console.error('Error toggling playback:', e);
     }
   }, [isPlaying]);
 
