@@ -139,13 +139,13 @@ export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlay
             </div>
           </div>
 
-          {/* Video/Album Art Area */}
-          <div className="flex-1 flex flex-col items-center justify-start px-4 pt-2 pb-4">
+          {/* Video/Album Art Area - Consistent layout for all devices */}
+          <div className="flex-1 flex flex-col items-center justify-center px-4 pb-24">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className={`relative w-full max-w-lg aspect-video rounded-2xl overflow-hidden ${
+              className={`relative w-full max-w-md aspect-video rounded-2xl overflow-hidden ${
                 isPlaying ? 'animate-pulse-glow' : ''
               }`}
               style={{ boxShadow: '0 0 30px hsl(0 72% 50% / 0.3)' }}
@@ -174,7 +174,7 @@ export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlay
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="mt-4 text-center max-w-md px-4"
+              className="mt-6 text-center max-w-md px-4"
             >
               <h2 className="text-xl font-bold line-clamp-2">{currentTrack.title}</h2>
               <p className="text-base text-muted-foreground mt-1 truncate">{currentTrack.artist}</p>
@@ -185,7 +185,7 @@ export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlay
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="flex items-center justify-center gap-5 mt-4"
+              className="flex items-center justify-center gap-5 mt-6"
             >
               <motion.button
                 whileHover={{ scale: 1.1 }}
@@ -266,81 +266,81 @@ export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlay
               </motion.button>
             </motion.div>
 
-            {/* Progress Bar - closer to controls */}
+            {/* Progress Bar - Higher position, more space from footer */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="w-full max-w-md px-4 mt-5"
+              className="w-full max-w-md px-4 mt-8"
             >
-            {/* Time Display with Cache Indicator before time */}
-            <div className="flex justify-between items-center mb-3">
-              <div className="flex items-center gap-2">
-                {/* Cache indicator before time - RED */}
-                {currentTrack.isCached && (
-                  <div 
-                    className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium"
-                    style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)', color: 'hsl(0 72% 50%)' }}
-                  >
-                    <WifiOff className="h-3 w-3" />
-                  </div>
-                )}
-                {isBuffering && (
-                  <motion.div 
-                    className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium animate-cache-pulse"
-                    style={{ backgroundColor: 'hsl(0 72% 50% / 0.3)', color: 'hsl(0 72% 50%)' }}
-                    animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                  </motion.div>
-                )}
-                {/* Time - WHITE */}
+              {/* Time Display with Cache Indicator before time */}
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-2">
+                  {/* Cache indicator before time - RED */}
+                  {currentTrack.isCached && (
+                    <div 
+                      className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium"
+                      style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)', color: 'hsl(0 72% 50%)' }}
+                    >
+                      <WifiOff className="h-3 w-3" />
+                    </div>
+                  )}
+                  {isBuffering && (
+                    <motion.div 
+                      className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium animate-cache-pulse"
+                      style={{ backgroundColor: 'hsl(0 72% 50% / 0.3)', color: 'hsl(0 72% 50%)' }}
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                    </motion.div>
+                  )}
+                  {/* Time - WHITE */}
+                  <span className="text-base font-bold text-white px-2 py-1 rounded bg-background/30">
+                    {formatTime(currentTime)}
+                  </span>
+                </div>
+                {/* Duration - WHITE */}
                 <span className="text-base font-bold text-white px-2 py-1 rounded bg-background/30">
-                  {formatTime(currentTime)}
+                  {formatTime(currentTrack.duration)}
                 </span>
               </div>
-              {/* Duration - WHITE */}
-              <span className="text-base font-bold text-white px-2 py-1 rounded bg-background/30">
-                {formatTime(currentTrack.duration)}
-              </span>
-            </div>
-            
-            {/* Progress Bar Track */}
-            <div 
-              className="relative h-3 w-full rounded-full overflow-visible cursor-pointer"
-              style={{ backgroundColor: 'hsl(0 72% 50% / 0.3)' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                const rect = e.currentTarget.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const percentage = (x / rect.width) * 100;
-                setLocalProgress(percentage);
-                seekTo(percentage);
-              }}
-            >
-              {/* Progress Fill */}
-              <motion.div 
-                className={`absolute top-0 left-0 h-full rounded-full ${isBuffering ? 'animate-cache-pulse' : ''}`}
-                style={{ 
-                  width: `${localProgress}%`,
-                  backgroundColor: 'hsl(0 72% 50%)',
-                  boxShadow: isBuffering ? '0 0 20px hsl(0 72% 50% / 0.9)' : '0 0 15px hsl(0 72% 50% / 0.7)'
-                }}
-              />
               
-              {/* Progress Thumb */}
-              <motion.div 
-                className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white ${isBuffering ? 'animate-pulse' : ''}`}
-                style={{ 
-                  left: `calc(${localProgress}% - 10px)`,
-                  backgroundColor: 'hsl(0 72% 50%)',
-                  boxShadow: '0 0 15px hsl(0 72% 50% / 0.8)'
+              {/* Progress Bar Track */}
+              <div 
+                className="relative h-3 w-full rounded-full overflow-visible cursor-pointer"
+                style={{ backgroundColor: 'hsl(0 72% 50% / 0.3)' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const percentage = (x / rect.width) * 100;
+                  setLocalProgress(percentage);
+                  seekTo(percentage);
                 }}
-                whileHover={{ scale: 1.3 }}
-              />
-            </div>
-          </motion.div>
+              >
+                {/* Progress Fill */}
+                <motion.div 
+                  className={`absolute top-0 left-0 h-full rounded-full ${isBuffering ? 'animate-cache-pulse' : ''}`}
+                  style={{ 
+                    width: `${localProgress}%`,
+                    backgroundColor: 'hsl(0 72% 50%)',
+                    boxShadow: isBuffering ? '0 0 20px hsl(0 72% 50% / 0.9)' : '0 0 15px hsl(0 72% 50% / 0.7)'
+                  }}
+                />
+                
+                {/* Progress Thumb */}
+                <motion.div 
+                  className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white ${isBuffering ? 'animate-pulse' : ''}`}
+                  style={{ 
+                    left: `calc(${localProgress}% - 10px)`,
+                    backgroundColor: 'hsl(0 72% 50%)',
+                    boxShadow: '0 0 15px hsl(0 72% 50% / 0.8)'
+                  }}
+                  whileHover={{ scale: 1.3 }}
+                />
+              </div>
+            </motion.div>
           </div>
 
           {/* Bottom Navigation in Fullscreen */}
