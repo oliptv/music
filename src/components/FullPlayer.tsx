@@ -140,7 +140,7 @@ export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlay
           </div>
 
           {/* Video/Album Art Area */}
-          <div className="flex-1 flex flex-col items-center justify-center px-4 py-4">
+          <div className="flex-1 flex flex-col items-center justify-start px-4 pt-2 pb-4">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -174,7 +174,7 @@ export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlay
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="mt-6 text-center max-w-md px-4"
+              className="mt-4 text-center max-w-md px-4"
             >
               <h2 className="text-xl font-bold line-clamp-2">{currentTrack.title}</h2>
               <p className="text-base text-muted-foreground mt-1 truncate">{currentTrack.artist}</p>
@@ -185,7 +185,7 @@ export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlay
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="flex items-center justify-center gap-5 mt-6"
+              className="flex items-center justify-center gap-5 mt-4"
             >
               <motion.button
                 whileHover={{ scale: 1.1 }}
@@ -266,12 +266,12 @@ export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlay
               </motion.button>
             </motion.div>
 
-            {/* Progress Bar - below controls */}
+            {/* Progress Bar - closer to controls */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="w-full max-w-md px-4 mt-8"
+              className="w-full max-w-md px-4 mt-5"
             >
             {/* Time Display with Cache Indicator before time */}
             <div className="flex justify-between items-center mb-3">
