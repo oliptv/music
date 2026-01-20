@@ -24,10 +24,10 @@ export const MiniPlayer = ({ onExpand }: MiniPlayerProps) => {
           className="glass-card rounded-2xl p-3 cursor-pointer relative overflow-hidden"
           onClick={onExpand}
         >
-          {/* Progress Bar Background */}
+          {/* Progress Bar Background - RED */}
           <div 
-            className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-primary to-accent transition-all duration-300"
-            style={{ width: `${progress}%` }}
+            className="absolute bottom-0 left-0 h-1 transition-all duration-300"
+            style={{ width: `${progress}%`, backgroundColor: 'hsl(0 72% 50%)' }}
           />
 
           <div className="flex items-center gap-3">

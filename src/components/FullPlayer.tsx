@@ -10,7 +10,8 @@ import {
   Wifi,
   ChevronDown,
   Volume2,
-  MoreVertical
+  MoreVertical,
+  Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMusicStore } from '@/store/musicStore';
@@ -37,7 +38,10 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
     toggleShuffle,
     cycleRepeat,
     setProgress,
-    setVolume
+    setVolume,
+    addToFavorites,
+    removeFromFavorites,
+    isFavorite
   } = useMusicStore();
   
   const { currentTrack, isPlaying, progress, volume, shuffle, repeat } = playerState;
@@ -133,6 +137,26 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
             >
               <h2 className="text-2xl font-bold line-clamp-2">{currentTrack.title}</h2>
               <p className="text-lg text-muted-foreground mt-1 truncate">{currentTrack.artist}</p>
+              
+              {/* Favorite Button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  if (isFavorite(currentTrack.id)) {
+                    removeFromFavorites(currentTrack.id);
+                  } else {
+                    addToFavorites(currentTrack);
+                  }
+                }}
+                className="mt-4 p-3 rounded-full hover:bg-muted transition-colors"
+                title={isFavorite(currentTrack.id) ? "Verwijderen uit favorieten" : "Toevoegen aan favorieten"}
+              >
+                <Heart 
+                  className={`h-7 w-7 ${isFavorite(currentTrack.id) ? 'text-cache-loading fill-current' : 'text-muted-foreground hover:text-foreground'}`}
+                  style={isFavorite(currentTrack.id) ? { color: 'hsl(0 72% 50%)', fill: 'hsl(0 72% 50%)' } : {}}
+                />
+              </motion.button>
             </motion.div>
 
             {/* Progress Bar */}
