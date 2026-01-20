@@ -9,7 +9,6 @@ import {
   WifiOff,
   ChevronDown,
   Volume2,
-  MoreVertical,
   Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -79,9 +78,21 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isFavorite(currentTrack.id)) {
+                  removeFromFavorites(currentTrack.id);
+                } else {
+                  addToFavorites(currentTrack);
+                }
+              }}
               className="p-2 rounded-full hover:bg-muted transition-colors"
+              title={isFavorite(currentTrack.id) ? "Verwijderen uit favorieten" : "Toevoegen aan favorieten"}
             >
-              <MoreVertical className="h-6 w-6" />
+              <Heart 
+                className={`h-6 w-6 ${isFavorite(currentTrack.id) ? '' : 'text-muted-foreground hover:text-foreground'}`}
+                style={isFavorite(currentTrack.id) ? { color: 'hsl(0 72% 50%)', fill: 'hsl(0 72% 50%)' } : {}}
+              />
             </motion.button>
           </div>
 
@@ -124,26 +135,6 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
             >
               <h2 className="text-2xl font-bold line-clamp-2">{currentTrack.title}</h2>
               <p className="text-lg text-muted-foreground mt-1 truncate">{currentTrack.artist}</p>
-              
-              {/* Favorite Button */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  if (isFavorite(currentTrack.id)) {
-                    removeFromFavorites(currentTrack.id);
-                  } else {
-                    addToFavorites(currentTrack);
-                  }
-                }}
-                className="mt-4 p-3 rounded-full hover:bg-muted transition-colors"
-                title={isFavorite(currentTrack.id) ? "Verwijderen uit favorieten" : "Toevoegen aan favorieten"}
-              >
-                <Heart 
-                  className={`h-7 w-7 ${isFavorite(currentTrack.id) ? 'text-cache-loading fill-current' : 'text-muted-foreground hover:text-foreground'}`}
-                  style={isFavorite(currentTrack.id) ? { color: 'hsl(0 72% 50%)', fill: 'hsl(0 72% 50%)' } : {}}
-                />
-              </motion.button>
             </motion.div>
 
 
@@ -230,12 +221,12 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
             </motion.div>
           </div>
           
-          {/* Bottom Progress Bar */}
+          {/* Bottom Progress Bar - moved up */}
           <motion.div 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-6"
+            className="absolute bottom-0 left-0 right-0 px-4 pb-12 pt-6"
             style={{ backgroundColor: 'hsl(222 30% 8% / 0.95)' }}
           >
             {/* Time Display with Cache Indicator */}
