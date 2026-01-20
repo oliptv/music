@@ -3,6 +3,9 @@ import {
   Pause, 
   SkipForward, 
   SkipBack, 
+  Shuffle,
+  Repeat,
+  Repeat1,
   WifiOff,
   ChevronDown,
   Heart
@@ -28,13 +31,15 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
     togglePlayPause, 
     playNext, 
     playPrevious,
+    toggleShuffle,
+    cycleRepeat,
     seekTo,
     addToFavorites,
     removeFromFavorites,
     isFavorite
   } = useMusicStore();
   
-  const { currentTrack, isPlaying, progress, isBuffering } = playerState;
+  const { currentTrack, isPlaying, progress, shuffle, repeat, isBuffering } = playerState;
   const [localProgress, setLocalProgress] = useState(progress);
 
   useEffect(() => {
@@ -129,13 +134,28 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
               <p className="text-base text-muted-foreground mt-1 truncate">{currentTrack.artist}</p>
             </motion.div>
 
-            {/* Controls - Simplified */}
+            {/* Controls with Shuffle and Repeat */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="flex items-center justify-center gap-8 mt-6"
+              className="flex items-center justify-center gap-5 mt-6"
             >
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleShuffle();
+                }}
+                className={`p-2 rounded-full transition-colors ${
+                  shuffle ? '' : 'text-muted-foreground hover:text-foreground'
+                }`}
+                style={shuffle ? { color: 'hsl(0 72% 50%)' } : {}}
+              >
+                <Shuffle className="h-5 w-5" />
+              </motion.button>
+
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
@@ -179,27 +199,48 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
               >
                 <SkipForward className="h-8 w-8" />
               </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  cycleRepeat();
+                }}
+                className={`p-2 rounded-full transition-colors ${
+                  repeat !== 'off' ? '' : 'text-muted-foreground hover:text-foreground'
+                }`}
+                style={repeat !== 'off' ? { color: 'hsl(0 72% 50%)' } : {}}
+              >
+                {repeat === 'one' ? (
+                  <Repeat1 className="h-5 w-5" />
+                ) : (
+                  <Repeat className="h-5 w-5" />
+                )}
+              </motion.button>
             </motion.div>
           </div>
           
-          {/* Bottom Progress Bar */}
+          {/* Bottom Progress Bar - moved higher */}
           <motion.div 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="absolute bottom-0 left-0 right-0 px-4 pb-10 pt-4"
+            className="absolute bottom-0 left-0 right-0 px-4 pb-14 pt-4"
             style={{ backgroundColor: 'hsl(222 30% 8% / 0.95)' }}
           >
-            {/* Time Display with Cache Indicator */}
+            {/* Time Display with Cache Indicator before time */}
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center gap-2">
-                <span 
-                  className="text-base font-bold bg-background/50 px-2 py-1 rounded"
-                  style={{ color: 'hsl(0 72% 55%)' }}
-                >
-                  {formatTime(currentTime)}
-                </span>
-                {/* Cache/Loading indicator next to time */}
+                {/* Cache indicator before time */}
+                {currentTrack.isCached && (
+                  <div 
+                    className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium"
+                    style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)', color: 'hsl(0 72% 55%)' }}
+                  >
+                    <WifiOff className="h-3 w-3" />
+                  </div>
+                )}
                 {isBuffering && (
                   <motion.div 
                     className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium animate-cache-pulse"
@@ -208,18 +249,14 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
                     transition={{ duration: 1.5, repeat: Infinity }}
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                    <span>Laden...</span>
                   </motion.div>
                 )}
-                {currentTrack.isCached && !isBuffering && (
-                  <div 
-                    className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium"
-                    style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)', color: 'hsl(0 72% 55%)' }}
-                  >
-                    <WifiOff className="h-3 w-3" />
-                    <span>Gecached</span>
-                  </div>
-                )}
+                <span 
+                  className="text-base font-bold bg-background/50 px-2 py-1 rounded"
+                  style={{ color: 'hsl(0 72% 55%)' }}
+                >
+                  {formatTime(currentTime)}
+                </span>
               </div>
               <span 
                 className="text-base font-bold bg-background/50 px-2 py-1 rounded"
