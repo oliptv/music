@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import { useMusicStore } from '@/store/musicStore';
 import { HardDrive, Wifi, Trash2, Clock, Info, Youtube } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AppLogo } from '@/components/AppLogo';
 
@@ -12,6 +14,30 @@ export const SettingsView = () => {
   const cacheSize = getCacheSize();
   const maxSizeMB = cacheSettings.maxSizeGB * 1024;
   const usagePercent = (cacheSize / maxSizeMB) * 100;
+
+  const [youtubeApiKey, setYoutubeApiKey] = useState('');
+  const [keySaved, setKeySaved] = useState(false);
+
+  useEffect(() => {
+    try {
+      setYoutubeApiKey(localStorage.getItem('youtubeApiKey') || '');
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const saveYoutubeKey = () => {
+    try {
+      const next = youtubeApiKey.trim();
+      if (next) localStorage.setItem('youtubeApiKey', next);
+      else localStorage.removeItem('youtubeApiKey');
+
+      setKeySaved(true);
+      window.setTimeout(() => setKeySaved(false), 1500);
+    } catch {
+      // ignore
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6 pb-40">
@@ -160,7 +186,46 @@ export const SettingsView = () => {
         </div>
       </motion.div>
 
+      {/* YouTube API */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="glass-card rounded-2xl p-6 space-y-4"
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-primary/20">
+            <Youtube className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">YouTube</h2>
+            <p className="text-sm text-muted-foreground">Stel je eigen API key in</p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="youtube-api-key" className="text-foreground">
+            YouTube Data API key
+          </Label>
+          <Input
+            id="youtube-api-key"
+            value={youtubeApiKey}
+            onChange={(e) => setYoutubeApiKey(e.target.value)}
+            placeholder="Plak je API key hier (optioneel)"
+          />
+          <p className="text-xs text-muted-foreground">Leeg laten = standaard key gebruiken.</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={saveYoutubeKey} className="h-12">
+            Opslaan
+          </Button>
+          {keySaved && <span className="text-sm text-muted-foreground">Opgeslagen</span>}
+        </div>
+      </motion.div>
+
       {/* Offline Info */}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
