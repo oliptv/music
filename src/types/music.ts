@@ -7,6 +7,11 @@ export interface Track {
   isCached: boolean;
   cachedAt?: Date;
   youtubeId?: string;
+  // For local files
+  isLocal?: boolean;
+  localBlobUrl?: string;
+  mimeType?: string;
+  fileSize?: number;
 }
 
 export interface PlayerState {

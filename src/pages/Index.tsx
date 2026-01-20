@@ -7,12 +7,16 @@ import { BottomNav } from '@/components/BottomNav';
 import { MiniPlayer } from '@/components/MiniPlayer';
 import { FullPlayer } from '@/components/FullPlayer';
 import { YouTubePlayer } from '@/components/YouTubePlayer';
+import { LocalMediaPlayer } from '@/components/LocalMediaPlayer';
+import { useMusicStore } from '@/store/musicStore';
 
 type TabType = 'search' | 'library' | 'favorites' | 'settings';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<TabType>('search');
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const { playerState } = useMusicStore();
+  const currentTrack = playerState.currentTrack;
 
   const renderView = () => {
     switch (activeTab) {
@@ -31,8 +35,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hidden YouTube Player for audio playback */}
-      <YouTubePlayer />
+      {/* Player - YouTube for YouTube tracks, Local for local files */}
+      {currentTrack?.isLocal ? <LocalMediaPlayer /> : <YouTubePlayer />}
       
       <main className="max-w-2xl mx-auto px-4 py-6">
         {renderView()}
