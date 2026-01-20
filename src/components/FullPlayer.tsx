@@ -3,17 +3,12 @@ import {
   Pause, 
   SkipForward, 
   SkipBack, 
-  Shuffle, 
-  Repeat, 
-  Repeat1, 
   WifiOff,
   ChevronDown,
-  Volume2,
   Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMusicStore } from '@/store/musicStore';
-import { Slider } from '@/components/ui/slider';
 import { useState, useEffect } from 'react';
 
 interface FullPlayerProps {
@@ -33,16 +28,13 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
     togglePlayPause, 
     playNext, 
     playPrevious,
-    toggleShuffle,
-    cycleRepeat,
     seekTo,
-    setVolume,
     addToFavorites,
     removeFromFavorites,
     isFavorite
   } = useMusicStore();
   
-  const { currentTrack, isPlaying, progress, volume, shuffle, repeat, isBuffering } = playerState;
+  const { currentTrack, isPlaying, progress, isBuffering } = playerState;
   const [localProgress, setLocalProgress] = useState(progress);
 
   useEffect(() => {
@@ -96,15 +88,16 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
             </motion.button>
           </div>
 
-          {/* Album Art */}
-          <div className="flex-1 flex flex-col items-center justify-center px-8 py-6">
+          {/* Video/Album Art Area */}
+          <div className="flex-1 flex flex-col items-center justify-center px-4 py-4">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className={`relative w-72 h-72 md:w-80 md:h-80 rounded-3xl overflow-hidden gradient-border ${
+              className={`relative w-full max-w-lg aspect-video rounded-2xl overflow-hidden ${
                 isPlaying ? 'animate-pulse-glow' : ''
               }`}
+              style={{ boxShadow: '0 0 30px hsl(0 72% 50% / 0.3)' }}
             >
               {currentTrack.thumbnail ? (
                 <img 
@@ -115,15 +108,14 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center">
                   <motion.span 
-                    className="text-8xl font-bold gradient-text"
-                    animate={{ rotate: isPlaying ? 360 : 0 }}
-                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                    className="text-6xl font-bold gradient-text"
+                    animate={{ scale: isPlaying ? [1, 1.05, 1] : 1 }}
+                    transition={{ duration: 2, repeat: Infinity }}
                   >
                     {currentTrack.title.charAt(0)}
                   </motion.span>
                 </div>
               )}
-              <div className="absolute inset-0 glow-primary opacity-50" />
             </motion.div>
 
             {/* Track Info */}
@@ -131,35 +123,26 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="mt-8 text-center max-w-md px-4"
+              className="mt-6 text-center max-w-md px-4"
             >
-              <h2 className="text-2xl font-bold line-clamp-2">{currentTrack.title}</h2>
-              <p className="text-lg text-muted-foreground mt-1 truncate">{currentTrack.artist}</p>
+              <h2 className="text-xl font-bold line-clamp-2">{currentTrack.title}</h2>
+              <p className="text-base text-muted-foreground mt-1 truncate">{currentTrack.artist}</p>
             </motion.div>
 
-
-            {/* Controls */}
+            {/* Controls - Simplified */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="flex items-center justify-center gap-6 mt-8"
+              transition={{ delay: 0.3 }}
+              className="flex items-center justify-center gap-8 mt-6"
             >
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={toggleShuffle}
-                className={`p-3 rounded-full transition-colors ${
-                  shuffle ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Shuffle className="h-6 w-6" />
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={playPrevious}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playPrevious();
+                }}
                 className="p-3 rounded-full hover:bg-muted transition-colors"
               >
                 <SkipBack className="h-8 w-8" />
@@ -168,8 +151,15 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={togglePlayPause}
-                className="p-5 rounded-full bg-primary text-primary-foreground glow-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlayPause();
+                }}
+                className="p-5 rounded-full text-primary-foreground"
+                style={{ 
+                  backgroundColor: 'hsl(0 72% 50%)',
+                  boxShadow: '0 0 20px hsl(0 72% 50% / 0.6)'
+                }}
               >
                 {isPlaying ? (
                   <Pause className="h-10 w-10" />
@@ -181,52 +171,23 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={playNext}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playNext();
+                }}
                 className="p-3 rounded-full hover:bg-muted transition-colors"
               >
                 <SkipForward className="h-8 w-8" />
               </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={cycleRepeat}
-                className={`p-3 rounded-full transition-colors ${
-                  repeat !== 'off' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {repeat === 'one' ? (
-                  <Repeat1 className="h-6 w-6" />
-                ) : (
-                  <Repeat className="h-6 w-6" />
-                )}
-              </motion.button>
-            </motion.div>
-
-            {/* Volume */}
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="flex items-center gap-3 mt-8 w-full max-w-xs"
-            >
-              <Volume2 className="h-5 w-5 text-muted-foreground" />
-              <Slider
-                value={[volume]}
-                max={100}
-                step={1}
-                onValueChange={(value) => setVolume(value[0])}
-                className="flex-1"
-              />
             </motion.div>
           </div>
           
-          {/* Bottom Progress Bar - moved up */}
+          {/* Bottom Progress Bar */}
           <motion.div 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="absolute bottom-0 left-0 right-0 px-4 pb-12 pt-6"
+            className="absolute bottom-0 left-0 right-0 px-4 pb-10 pt-4"
             style={{ backgroundColor: 'hsl(222 30% 8% / 0.95)' }}
           >
             {/* Time Display with Cache Indicator */}
@@ -273,6 +234,7 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
               className="relative h-3 w-full rounded-full overflow-visible cursor-pointer"
               style={{ backgroundColor: 'hsl(0 72% 50% / 0.3)' }}
               onClick={(e) => {
+                e.stopPropagation();
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const percentage = (x / rect.width) * 100;
