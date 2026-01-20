@@ -51,9 +51,12 @@ export const searchYouTube = async (query: string): Promise<YouTubeSearchResult[
     // Search for videos
     const searchUrl = `${YOUTUBE_API_BASE}/search?part=snippet&type=video&videoCategoryId=10&maxResults=20&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
     const searchResponse = await fetch(searchUrl);
-    
+
     if (!searchResponse.ok) {
-      throw new Error('YouTube search failed');
+      const body = await searchResponse.json().catch(() => null) as any;
+      const reason = body?.error?.errors?.[0]?.reason as string | undefined;
+      const message = body?.error?.message as string | undefined;
+      throw new Error(reason ? `youtube:${reason}` : message || 'youtube:search_failed');
     }
     
     const searchData: YouTubeSearchResponse = await searchResponse.json();
@@ -66,9 +69,12 @@ export const searchYouTube = async (query: string): Promise<YouTubeSearchResult[
     const videoIds = searchData.items.map(item => item.id.videoId).join(',');
     const detailsUrl = `${YOUTUBE_API_BASE}/videos?part=contentDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`;
     const detailsResponse = await fetch(detailsUrl);
-    
+
     if (!detailsResponse.ok) {
-      throw new Error('Failed to get video details');
+      const body = await detailsResponse.json().catch(() => null) as any;
+      const reason = body?.error?.errors?.[0]?.reason as string | undefined;
+      const message = body?.error?.message as string | undefined;
+      throw new Error(reason ? `youtube:${reason}` : message || 'youtube:details_failed');
     }
     
     const detailsData: YouTubeVideoResponse = await detailsResponse.json();
