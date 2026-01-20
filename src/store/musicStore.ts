@@ -19,12 +19,18 @@ interface MusicStore {
   // Library
   tracks: Track[];
   cachedTracks: Track[];
+  localTracks: Track[];
   favorites: Track[];
   searchResults: Track[];
   searchQuery: string;
   isSearching: boolean;
   setSearchQuery: (query: string) => void;
   searchTracks: (query: string) => Promise<void>;
+  
+  // Local files
+  addLocalTrack: (track: Track) => void;
+  removeLocalTrack: (trackId: string) => void;
+  loadLocalTracks: (tracks: Track[]) => void;
   
   // Favorites
   addToFavorites: (track: Track) => void;
@@ -38,6 +44,7 @@ interface MusicStore {
   removeFromCache: (trackId: string) => void;
   clearOldCache: () => void;
   getCacheSize: () => number;
+  getLocalStorageSize: () => number;
   
   // Queue
   queue: Track[];
@@ -106,6 +113,7 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
   // Library
   tracks: [],
   cachedTracks: [],
+  localTracks: [],
   favorites: [],
   searchResults: [],
   searchQuery: '',
@@ -145,6 +153,19 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
       set({ searchResults: [], isSearching: false });
     }
   },
+  
+  // Local files
+  addLocalTrack: (track) => set((state) => {
+    const isAlreadyAdded = state.localTracks.some(t => t.id === track.id);
+    if (isAlreadyAdded) return state;
+    return { localTracks: [...state.localTracks, track] };
+  }),
+  
+  removeLocalTrack: (trackId) => set((state) => ({
+    localTracks: state.localTracks.filter(t => t.id !== trackId)
+  })),
+  
+  loadLocalTracks: (tracks) => set({ localTracks: tracks }),
   
   // Favorites
   addToFavorites: (track) => set((state) => {
@@ -204,6 +225,11 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
     const cached = get().cachedTracks;
     // Simulate ~5MB per track
     return cached.length * 5;
+  },
+  
+  getLocalStorageSize: () => {
+    const local = get().localTracks;
+    return local.reduce((total, track) => total + (track.fileSize || 0), 0);
   },
   
   // Queue
