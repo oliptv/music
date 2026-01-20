@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { Track, PlayerState, CacheSettings } from '@/types/music';
 import { searchYouTube } from '@/lib/youtube';
-import { toast } from 'sonner';
 
 interface MusicStore {
   // Player state
@@ -151,18 +150,6 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
       set({ searchResults: tracks, isSearching: false });
     } catch (error) {
       console.error('Search error:', error);
-
-      const msg = error instanceof Error ? error.message : '';
-      if (msg.includes('youtube:quotaExceeded')) {
-        toast.error('YouTube quota overschreden', {
-          description: 'Gebruik een API key uit een nieuw Google Cloud project, of wacht tot de quota reset.',
-        });
-      } else {
-        toast.error('YouTube zoeken mislukt', {
-          description: 'Controleer je API key en API restricties in Google Cloud Console.',
-        });
-      }
-
       set({ searchResults: [], isSearching: false });
     }
   },
