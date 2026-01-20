@@ -78,14 +78,20 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
             </motion.button>
             <div className="flex items-center gap-2">
               {currentTrack.isCached ? (
-                <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-primary/20 text-primary text-sm">
+                <div 
+                  className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium"
+                  style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)', color: 'hsl(0 72% 50%)' }}
+                >
                   <WifiOff className="h-4 w-4" />
-                  <span>Offline</span>
+                  <span>Gecached</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-muted text-muted-foreground text-sm">
+                <div 
+                  className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium"
+                  style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)', color: 'hsl(0 72% 50%)' }}
+                >
                   <Wifi className="h-4 w-4" />
-                  <span>Streaming</span>
+                  <span>Laden...</span>
                 </div>
               )}
             </div>
