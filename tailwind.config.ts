@@ -85,6 +85,20 @@ export default {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
         },
+        "cache-pulse": {
+          "0%, 100%": { 
+            opacity: "0.7",
+            boxShadow: "0 0 8px hsl(0 72% 50% / 0.3)"
+          },
+          "50%": { 
+            opacity: "1",
+            boxShadow: "0 0 20px hsl(0 72% 50% / 0.6)"
+          },
+        },
+        "loading-dot": {
+          "0%, 80%, 100%": { transform: "scale(0.6)", opacity: "0.5" },
+          "40%": { transform: "scale(1)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -92,6 +106,8 @@ export default {
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "slide-up": "slide-up 0.3s ease-out",
         "spin-slow": "spin-slow 8s linear infinite",
+        "cache-pulse": "cache-pulse 1.5s ease-in-out infinite",
+        "loading-dot": "loading-dot 1.4s ease-in-out infinite",
       },
     },
   },

@@ -86,13 +86,21 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
                   <span>Gecached</span>
                 </div>
               ) : (
-                <div 
-                  className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium"
+                <motion.div 
+                  className="flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium animate-cache-pulse"
                   style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)', color: 'hsl(0 72% 50%)' }}
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <Wifi className="h-4 w-4" />
-                  <span>Laden...</span>
-                </div>
+                  <Wifi className="h-4 w-4 animate-pulse" />
+                  <span>Laden</span>
+                  <span className="flex gap-0.5">
+                    <span className="w-1 h-1 rounded-full bg-current animate-loading-dot" style={{ animationDelay: '0s' }} />
+                    <span className="w-1 h-1 rounded-full bg-current animate-loading-dot" style={{ animationDelay: '0.2s' }} />
+                    <span className="w-1 h-1 rounded-full bg-current animate-loading-dot" style={{ animationDelay: '0.4s' }} />
+                  </span>
+                </motion.div>
               )}
             </div>
             <motion.button
