@@ -12,11 +12,13 @@ import {
   Download,
   Search,
   Library,
-  Settings
+  Settings,
+  Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMusicStore } from '@/store/musicStore';
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 type TabType = 'search' | 'library' | 'favorites' | 'settings';
 
@@ -97,6 +99,10 @@ export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlay
                   e.stopPropagation();
                   if (!currentTrack.isCached) {
                     addToCache(currentTrack);
+                    toast.success('Video opgeslagen voor offline', {
+                      description: `"${currentTrack.title}" is nu beschikbaar zonder internet`,
+                      icon: <Check className="h-4 w-4" />,
+                    });
                   }
                 }}
                 className={`p-2 rounded-full transition-colors ${
@@ -351,8 +357,12 @@ export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlay
                     whileTap={{ scale: 0.95 }}
                     onClick={(e) => {
                       e.stopPropagation();
+                      e.preventDefault();
+                      // First change tab, then close with small delay for smooth transition
                       onTabChange(tab.id);
-                      onClose();
+                      setTimeout(() => {
+                        onClose();
+                      }, 50);
                     }}
                     className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors ${
                       isActive 
