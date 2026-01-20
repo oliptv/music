@@ -1,4 +1,4 @@
-const DEFAULT_YOUTUBE_API_KEY = 'AIzaSyC13FIj2bKZZ415aNpCtSDTgUIllSJmBFA';
+const DEFAULT_YOUTUBE_API_KEY = 'AIzaSyDBG-eYBSICzAH730ZqzVWb3wZ9wvf2NFQ';
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 
 const getYouTubeApiKey = (): string => {
