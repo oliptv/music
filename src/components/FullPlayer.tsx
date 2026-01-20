@@ -8,15 +8,23 @@ import {
   Repeat1,
   WifiOff,
   ChevronDown,
-  Heart
+  Heart,
+  Download,
+  Search,
+  Library,
+  Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMusicStore } from '@/store/musicStore';
 import { useState, useEffect } from 'react';
 
+type TabType = 'search' | 'library' | 'favorites' | 'settings';
+
 interface FullPlayerProps {
   isOpen: boolean;
   onClose: () => void;
+  activeTab: TabType;
+  onTabChange: (tab: TabType) => void;
 }
 
 const formatTime = (seconds: number) => {
@@ -25,7 +33,14 @@ const formatTime = (seconds: number) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
+const navTabs = [
+  { id: 'search' as TabType, icon: Search, label: 'Zoeken' },
+  { id: 'library' as TabType, icon: Library, label: 'Bibliotheek' },
+  { id: 'favorites' as TabType, icon: Heart, label: 'Favorieten' },
+  { id: 'settings' as TabType, icon: Settings, label: 'Instellingen' },
+];
+
+export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlayerProps) => {
   const { 
     playerState, 
     togglePlayPause, 
@@ -36,7 +51,8 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
     seekTo,
     addToFavorites,
     removeFromFavorites,
-    isFavorite
+    isFavorite,
+    addToCache
   } = useMusicStore();
   
   const { currentTrack, isPlaying, progress, shuffle, repeat, isBuffering } = playerState;
@@ -72,25 +88,49 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
               <ChevronDown className="h-6 w-6" />
             </motion.button>
             <div className="flex-1" />
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (isFavorite(currentTrack.id)) {
-                  removeFromFavorites(currentTrack.id);
-                } else {
-                  addToFavorites(currentTrack);
-                }
-              }}
-              className="p-2 rounded-full hover:bg-muted transition-colors"
-              title={isFavorite(currentTrack.id) ? "Verwijderen uit favorieten" : "Toevoegen aan favorieten"}
-            >
-              <Heart 
-                className={`h-6 w-6 ${isFavorite(currentTrack.id) ? '' : 'text-muted-foreground hover:text-foreground'}`}
-                style={isFavorite(currentTrack.id) ? { color: 'hsl(0 72% 50%)', fill: 'hsl(0 72% 50%)' } : {}}
-              />
-            </motion.button>
+            <div className="flex items-center gap-2">
+              {/* Download/Cache button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!currentTrack.isCached) {
+                    addToCache(currentTrack);
+                  }
+                }}
+                className={`p-2 rounded-full transition-colors ${
+                  currentTrack.isCached ? '' : 'hover:bg-muted'
+                }`}
+                title={currentTrack.isCached ? "Al opgeslagen voor offline" : "Opslaan voor offline"}
+                disabled={currentTrack.isCached}
+              >
+                <Download 
+                  className={`h-6 w-6 ${currentTrack.isCached ? '' : 'text-muted-foreground hover:text-foreground'}`}
+                  style={currentTrack.isCached ? { color: 'hsl(0 72% 50%)' } : {}}
+                />
+              </motion.button>
+              {/* Favorite button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isFavorite(currentTrack.id)) {
+                    removeFromFavorites(currentTrack.id);
+                  } else {
+                    addToFavorites(currentTrack);
+                  }
+                }}
+                className="p-2 rounded-full hover:bg-muted transition-colors"
+                title={isFavorite(currentTrack.id) ? "Verwijderen uit favorieten" : "Toevoegen aan favorieten"}
+              >
+                <Heart 
+                  className={`h-6 w-6 ${isFavorite(currentTrack.id) ? '' : 'text-muted-foreground hover:text-foreground'}`}
+                  style={isFavorite(currentTrack.id) ? { color: 'hsl(0 72% 50%)', fill: 'hsl(0 72% 50%)' } : {}}
+                />
+              </motion.button>
+            </div>
           </div>
 
           {/* Video/Album Art Area */}
@@ -296,6 +336,45 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
             </div>
           </motion.div>
           </div>
+
+          {/* Bottom Navigation in Fullscreen */}
+          <nav className="fixed bottom-0 left-0 right-0 z-50 glass-card border-t border-border">
+            <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
+              {navTabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                
+                return (
+                  <motion.button
+                    key={tab.id}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTabChange(tab.id);
+                      onClose();
+                    }}
+                    className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors ${
+                      isActive 
+                        ? 'text-primary' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <div className="relative">
+                      <Icon className="h-5 w-5" />
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeTabFullscreen"
+                          className="absolute -top-1 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary"
+                        />
+                      )}
+                    </div>
+                    <span className="text-xs font-medium">{tab.label}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </nav>
         </motion.div>
       )}
     </AnimatePresence>
