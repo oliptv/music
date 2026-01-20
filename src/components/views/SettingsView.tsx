@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useMusicStore } from '@/store/musicStore';
-import { HardDrive, Wifi, Trash2, Clock } from 'lucide-react';
+import { HardDrive, Wifi, Trash2, Clock, Info, Youtube } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
@@ -157,6 +157,64 @@ export const SettingsView = () => {
             checked={cacheSettings.wifiOnly}
             onCheckedChange={(checked) => updateCacheSettings({ wifiOnly: checked })}
           />
+        </div>
+      </motion.div>
+
+      {/* Offline Info */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="glass-card rounded-2xl p-6 space-y-4"
+      >
+        <div className="flex items-center gap-3">
+          <div 
+            className="p-3 rounded-xl"
+            style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)' }}
+          >
+            <Info className="h-6 w-6" style={{ color: 'hsl(0 72% 50%)' }} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">Over Offline Modus</h2>
+            <p className="text-sm text-muted-foreground">Hoe werkt het?</p>
+          </div>
+        </div>
+
+        <div className="space-y-4 text-sm">
+          <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/50">
+            <Youtube className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-foreground">YouTube Streaming</p>
+              <p className="text-muted-foreground mt-1">
+                Video's worden gestreamd via YouTube en vereisen een internetverbinding voor afspelen.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/50">
+            <HardDrive className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-foreground">Wat wordt opgeslagen?</p>
+              <p className="text-muted-foreground mt-1">
+                De download knop slaat video-informatie op (titel, artiest, thumbnail) zodat je je bibliotheek offline kunt bekijken.
+              </p>
+            </div>
+          </div>
+
+          <div 
+            className="p-3 rounded-xl border"
+            style={{ 
+              backgroundColor: 'hsl(0 72% 50% / 0.05)', 
+              borderColor: 'hsl(0 72% 50% / 0.3)' 
+            }}
+          >
+            <p style={{ color: 'hsl(0 72% 50%)' }} className="font-medium">
+              ⚠️ Let op
+            </p>
+            <p className="text-muted-foreground mt-1">
+              Het afspelen van video's vereist altijd een internetverbinding. Dit is een beperking van YouTube.
+            </p>
+          </div>
         </div>
       </motion.div>
     </div>
