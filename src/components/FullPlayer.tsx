@@ -173,28 +173,6 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
               </motion.button>
             </motion.div>
 
-            {/* Progress Bar */}
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="w-full max-w-md mt-8"
-            >
-              <Slider
-                value={[localProgress]}
-                max={100}
-                step={0.1}
-                onValueChange={(value) => {
-                  setLocalProgress(value[0]);
-                  setProgress(value[0]);
-                }}
-                className="w-full"
-              />
-              <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-                <span>{formatTime(currentTime)}</span>
-                <span>{formatTime(currentTrack.duration)}</span>
-              </div>
-            </motion.div>
 
             {/* Controls */}
             <motion.div 
@@ -278,6 +256,55 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
               />
             </motion.div>
           </div>
+          
+          {/* Bottom Progress Bar */}
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="absolute bottom-0 left-0 right-0 px-4 pb-6 pt-4 bg-gradient-to-t from-background/90 to-transparent"
+          >
+            {/* Time Display */}
+            <div className="flex justify-between mb-2 text-sm font-medium" style={{ color: 'hsl(0 72% 50%)' }}>
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(currentTrack.duration)}</span>
+            </div>
+            
+            {/* Progress Bar Track */}
+            <div 
+              className="relative h-2 w-full rounded-full overflow-hidden cursor-pointer"
+              style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)' }}
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percentage = (x / rect.width) * 100;
+                setLocalProgress(percentage);
+                setProgress(percentage);
+              }}
+            >
+              {/* Progress Fill */}
+              <motion.div 
+                className="absolute top-0 left-0 h-full rounded-full"
+                style={{ 
+                  width: `${localProgress}%`,
+                  backgroundColor: 'hsl(0 72% 50%)',
+                  boxShadow: '0 0 10px hsl(0 72% 50% / 0.5)'
+                }}
+                layoutId="progress"
+              />
+              
+              {/* Progress Thumb */}
+              <motion.div 
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full"
+                style={{ 
+                  left: `calc(${localProgress}% - 8px)`,
+                  backgroundColor: 'hsl(0 72% 50%)',
+                  boxShadow: '0 0 12px hsl(0 72% 50% / 0.6)'
+                }}
+                whileHover={{ scale: 1.2 }}
+              />
+            </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
