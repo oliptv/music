@@ -1,5 +1,13 @@
-const YOUTUBE_API_KEY = 'AIzaSyC13FIj2bKZZ415aNpCtSDTgUIllSJmBFA';
+const DEFAULT_YOUTUBE_API_KEY = 'AIzaSyC13FIj2bKZZ415aNpCtSDTgUIllSJmBFA';
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
+
+const getYouTubeApiKey = (): string => {
+  try {
+    return localStorage.getItem('youtubeApiKey') || DEFAULT_YOUTUBE_API_KEY;
+  } catch {
+    return DEFAULT_YOUTUBE_API_KEY;
+  }
+};
 
 export interface YouTubeSearchResult {
   id: string;
@@ -33,7 +41,10 @@ const parseDuration = (iso: string): number => {
 export const searchYouTube = async (query: string): Promise<YouTubeSearchResult[]> => {
   if (!query.trim()) return [];
 
-  const searchUrl = `${YOUTUBE_API_BASE}/search?part=snippet&type=video&videoCategoryId=10&maxResults=15&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+  const apiKey = getYouTubeApiKey();
+  if (!apiKey) throw new Error('youtube:noApiKey');
+
+  const searchUrl = `${YOUTUBE_API_BASE}/search?part=snippet&type=video&videoCategoryId=10&maxResults=15&q=${encodeURIComponent(query)}&key=${apiKey}`;
   const searchRes = await fetch(searchUrl);
 
   if (!searchRes.ok) {
@@ -46,7 +57,7 @@ export const searchYouTube = async (query: string): Promise<YouTubeSearchResult[
   if (!searchData.items?.length) return [];
 
   const ids = searchData.items.map(i => i.id.videoId).join(',');
-  const detailsRes = await fetch(`${YOUTUBE_API_BASE}/videos?part=contentDetails&id=${ids}&key=${YOUTUBE_API_KEY}`);
+  const detailsRes = await fetch(`${YOUTUBE_API_BASE}/videos?part=contentDetails&id=${ids}&key=${apiKey}`);
 
   const detailsData: YouTubeVideoResponse = detailsRes.ok ? await detailsRes.json() : { items: [] };
   const durMap = new Map(detailsData.items?.map(i => [i.id, parseDuration(i.contentDetails.duration)]) || []);
