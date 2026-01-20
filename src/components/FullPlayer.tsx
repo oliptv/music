@@ -230,11 +230,11 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
             {/* Time Display with Cache Indicator before time */}
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center gap-2">
-                {/* Cache indicator before time */}
+                {/* Cache indicator before time - RED */}
                 {currentTrack.isCached && (
                   <div 
                     className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium"
-                    style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)', color: 'hsl(0 72% 55%)' }}
+                    style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)', color: 'hsl(0 72% 50%)' }}
                   >
                     <WifiOff className="h-3 w-3" />
                   </div>
@@ -242,24 +242,20 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
                 {isBuffering && (
                   <motion.div 
                     className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium animate-cache-pulse"
-                    style={{ backgroundColor: 'hsl(0 72% 50% / 0.3)', color: 'hsl(0 72% 55%)' }}
+                    style={{ backgroundColor: 'hsl(0 72% 50% / 0.3)', color: 'hsl(0 72% 50%)' }}
                     animate={{ opacity: [0.5, 1, 0.5] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                   </motion.div>
                 )}
-                <span 
-                  className="text-base font-bold bg-background/50 px-2 py-1 rounded"
-                  style={{ color: 'hsl(0 72% 55%)' }}
-                >
+                {/* Time - WHITE */}
+                <span className="text-base font-bold text-white px-2 py-1 rounded bg-background/30">
                   {formatTime(currentTime)}
                 </span>
               </div>
-              <span 
-                className="text-base font-bold bg-background/50 px-2 py-1 rounded"
-                style={{ color: 'hsl(0 72% 55%)' }}
-              >
+              {/* Duration - WHITE */}
+              <span className="text-base font-bold text-white px-2 py-1 rounded bg-background/30">
                 {formatTime(currentTrack.duration)}
               </span>
             </div>
