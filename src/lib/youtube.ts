@@ -1,4 +1,4 @@
-const YOUTUBE_API_KEY = 'AIzaSyC0uEdT3sNq4r16VRaHzAm_0wYsc-0HsDM';
+const YOUTUBE_API_KEY = 'AIzaSyC13FIj2bKZZ415aNpCtSDTgUIllSJmBFA';
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 
 export interface YouTubeSearchResult {
