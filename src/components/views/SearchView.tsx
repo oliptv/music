@@ -1,24 +1,75 @@
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { useMusicStore } from '@/store/musicStore';
 import { SearchBar } from '@/components/SearchBar';
 import { TrackCard } from '@/components/TrackCard';
-import { Music, Search as SearchIcon, MoreVertical } from 'lucide-react';
+import { Music, Search as SearchIcon, MoreVertical, Key, Check } from 'lucide-react';
 import { AppLogo } from '@/components/AppLogo';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export const SearchView = () => {
   const { searchResults, searchQuery, isSearching, cachedTracks } = useMusicStore();
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    try {
+      setApiKey(localStorage.getItem('youtubeApiKey') || '');
+    } catch {}
+  }, []);
+
+  const saveKey = () => {
+    try {
+      const k = apiKey.trim();
+      if (k) localStorage.setItem('youtubeApiKey', k);
+      else localStorage.removeItem('youtubeApiKey');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+    } catch {}
+  };
 
   return (
     <div className="flex flex-col gap-6 pb-40">
       <div className="flex items-center justify-between">
         <div className="flex-1" />
         <AppLogo size="md" />
-        <div className="flex-1 flex justify-end">
+        <div className="flex-1 flex justify-end gap-2">
+          <button 
+            onClick={() => setShowApiKey(!showApiKey)}
+            className={`p-2 rounded-full transition-colors ${showApiKey ? 'text-primary bg-primary/20' : 'text-muted-foreground hover:text-foreground'}`}
+            title="YouTube API key"
+          >
+            <Key className="h-5 w-5" />
+          </button>
           <button className="p-2 text-muted-foreground hover:text-foreground transition-colors">
             <MoreVertical className="h-5 w-5" />
           </button>
         </div>
       </div>
+
+      {showApiKey && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="glass-card rounded-xl p-4 space-y-3"
+        >
+          <p className="text-sm text-muted-foreground">YouTube API key (optioneel)</p>
+          <div className="flex gap-2">
+            <Input
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Plak je API key hier..."
+              className="flex-1"
+            />
+            <Button variant="outline" size="icon" onClick={saveKey}>
+              {saved ? <Check className="h-4 w-4 text-emerald-400" /> : <Key className="h-4 w-4" />}
+            </Button>
+          </div>
+        </motion.div>
+      )}
 
       <SearchBar />
 
