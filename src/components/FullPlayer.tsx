@@ -358,11 +358,9 @@ export const FullPlayer = ({ isOpen, onClose, activeTab, onTabChange }: FullPlay
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
-                      // First change tab, then close with small delay for smooth transition
+                      // Change tab and close fullscreen - audio keeps playing in background
                       onTabChange(tab.id);
-                      setTimeout(() => {
-                        onClose();
-                      }, 50);
+                      onClose();
                     }}
                     className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors ${
                       isActive 
