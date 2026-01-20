@@ -1,10 +1,9 @@
 import { motion } from 'framer-motion';
 import { useMusicStore } from '@/store/musicStore';
 import { TrackCard } from '@/components/TrackCard';
-import { WifiOff, Music, Download, Trash2, HardDrive } from 'lucide-react';
+import { WifiOff, Music, Download, HardDrive } from 'lucide-react';
 import { AppLogo } from '@/components/AppLogo';
 import { FileUploadButton } from '@/components/FileUploadButton';
-import { UrlDownloadForm } from '@/components/UrlDownloadForm';
 import { toast } from 'sonner';
 import { deleteMediaFile, getAllMediaFiles } from '@/lib/mediaDB';
 import { useEffect } from 'react';
@@ -121,7 +120,6 @@ export const LibraryView = () => {
       {/* Upload Section */}
       <div className="space-y-4">
         <FileUploadButton />
-        <UrlDownloadForm />
       </div>
 
       {/* All Tracks */}
