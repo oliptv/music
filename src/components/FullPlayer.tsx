@@ -262,18 +262,19 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="absolute bottom-0 left-0 right-0 px-4 pb-6 pt-4 bg-gradient-to-t from-background/90 to-transparent"
+            className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-6"
+            style={{ backgroundColor: 'hsl(222 30% 8% / 0.95)' }}
           >
             {/* Time Display */}
-            <div className="flex justify-between mb-2 text-sm font-medium" style={{ color: 'hsl(0 72% 50%)' }}>
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(currentTrack.duration)}</span>
+            <div className="flex justify-between mb-3 text-base font-bold" style={{ color: 'hsl(0 72% 55%)' }}>
+              <span className="bg-background/50 px-2 py-1 rounded">{formatTime(currentTime)}</span>
+              <span className="bg-background/50 px-2 py-1 rounded">{formatTime(currentTrack.duration)}</span>
             </div>
             
             {/* Progress Bar Track */}
             <div 
-              className="relative h-2 w-full rounded-full overflow-hidden cursor-pointer"
-              style={{ backgroundColor: 'hsl(0 72% 50% / 0.2)' }}
+              className="relative h-3 w-full rounded-full overflow-visible cursor-pointer"
+              style={{ backgroundColor: 'hsl(0 72% 50% / 0.3)' }}
               onClick={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = e.clientX - rect.left;
@@ -288,20 +289,19 @@ export const FullPlayer = ({ isOpen, onClose }: FullPlayerProps) => {
                 style={{ 
                   width: `${localProgress}%`,
                   backgroundColor: 'hsl(0 72% 50%)',
-                  boxShadow: '0 0 10px hsl(0 72% 50% / 0.5)'
+                  boxShadow: '0 0 15px hsl(0 72% 50% / 0.7)'
                 }}
-                layoutId="progress"
               />
               
               {/* Progress Thumb */}
               <motion.div 
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full"
+                className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white"
                 style={{ 
-                  left: `calc(${localProgress}% - 8px)`,
+                  left: `calc(${localProgress}% - 10px)`,
                   backgroundColor: 'hsl(0 72% 50%)',
-                  boxShadow: '0 0 12px hsl(0 72% 50% / 0.6)'
+                  boxShadow: '0 0 15px hsl(0 72% 50% / 0.8)'
                 }}
-                whileHover={{ scale: 1.2 }}
+                whileHover={{ scale: 1.3 }}
               />
             </div>
           </motion.div>
