@@ -10,95 +10,55 @@ export interface YouTubeSearchResult {
 }
 
 interface YouTubeSearchResponse {
-  items: Array<{
+  items?: Array<{
     id: { videoId: string };
     snippet: {
       title: string;
       channelTitle: string;
-      thumbnails: {
-        medium: { url: string };
-        high: { url: string };
-      };
+      thumbnails: { medium: { url: string }; high?: { url: string } };
     };
   }>;
 }
 
 interface YouTubeVideoResponse {
-  items: Array<{
-    id: string;
-    contentDetails: {
-      duration: string;
-    };
-  }>;
+  items?: Array<{ id: string; contentDetails: { duration: string } }>;
 }
 
-// Parse ISO 8601 duration (PT4M13S) to seconds
-const parseDuration = (duration: string): number => {
-  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-  if (!match) return 0;
-  
-  const hours = parseInt(match[1] || '0');
-  const minutes = parseInt(match[2] || '0');
-  const seconds = parseInt(match[3] || '0');
-  
-  return hours * 3600 + minutes * 60 + seconds;
+const parseDuration = (iso: string): number => {
+  const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!m) return 0;
+  return (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0);
 };
 
 export const searchYouTube = async (query: string): Promise<YouTubeSearchResult[]> => {
   if (!query.trim()) return [];
-  
-  try {
-    // Search for videos
-    const searchUrl = `${YOUTUBE_API_BASE}/search?part=snippet&type=video&videoCategoryId=10&maxResults=20&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
-    const searchResponse = await fetch(searchUrl);
 
-    if (!searchResponse.ok) {
-      const body = await searchResponse.json().catch(() => null) as any;
-      const reason = body?.error?.errors?.[0]?.reason as string | undefined;
-      const message = body?.error?.message as string | undefined;
-      throw new Error(reason ? `youtube:${reason}` : message || 'youtube:search_failed');
-    }
-    
-    const searchData: YouTubeSearchResponse = await searchResponse.json();
-    
-    if (!searchData.items || searchData.items.length === 0) {
-      return [];
-    }
-    
-    // Get video durations
-    const videoIds = searchData.items.map(item => item.id.videoId).join(',');
-    const detailsUrl = `${YOUTUBE_API_BASE}/videos?part=contentDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`;
-    const detailsResponse = await fetch(detailsUrl);
+  const searchUrl = `${YOUTUBE_API_BASE}/search?part=snippet&type=video&videoCategoryId=10&maxResults=15&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+  const searchRes = await fetch(searchUrl);
 
-    if (!detailsResponse.ok) {
-      const body = await detailsResponse.json().catch(() => null) as any;
-      const reason = body?.error?.errors?.[0]?.reason as string | undefined;
-      const message = body?.error?.message as string | undefined;
-      throw new Error(reason ? `youtube:${reason}` : message || 'youtube:details_failed');
-    }
-    
-    const detailsData: YouTubeVideoResponse = await detailsResponse.json();
-    
-    // Map durations by video ID
-    const durationMap = new Map<string, number>();
-    detailsData.items.forEach(item => {
-      durationMap.set(item.id, parseDuration(item.contentDetails.duration));
-    });
-    
-    // Combine search results with durations
-    return searchData.items.map(item => ({
-      id: item.id.videoId,
-      title: item.snippet.title,
-      channelTitle: item.snippet.channelTitle,
-      thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.medium?.url,
-      duration: durationMap.get(item.id.videoId) || 0,
-    }));
-  } catch (error) {
-    console.error('YouTube search error:', error);
-    return [];
+  if (!searchRes.ok) {
+    const body = await searchRes.json().catch(() => ({})) as any;
+    const reason = body?.error?.errors?.[0]?.reason || 'unknown';
+    throw new Error(`youtube:${reason}`);
   }
+
+  const searchData: YouTubeSearchResponse = await searchRes.json();
+  if (!searchData.items?.length) return [];
+
+  const ids = searchData.items.map(i => i.id.videoId).join(',');
+  const detailsRes = await fetch(`${YOUTUBE_API_BASE}/videos?part=contentDetails&id=${ids}&key=${YOUTUBE_API_KEY}`);
+
+  const detailsData: YouTubeVideoResponse = detailsRes.ok ? await detailsRes.json() : { items: [] };
+  const durMap = new Map(detailsData.items?.map(i => [i.id, parseDuration(i.contentDetails.duration)]) || []);
+
+  return searchData.items.map(i => ({
+    id: i.id.videoId,
+    title: i.snippet.title,
+    channelTitle: i.snippet.channelTitle,
+    thumbnail: i.snippet.thumbnails.high?.url || i.snippet.thumbnails.medium.url,
+    duration: durMap.get(i.id.videoId) || 0,
+  }));
 };
 
-export const getYouTubeEmbedUrl = (videoId: string): string => {
-  return `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
-};
+export const getYouTubeEmbedUrl = (videoId: string): string =>
+  `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;

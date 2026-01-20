@@ -2,18 +2,19 @@ import { Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMusicStore } from '@/store/musicStore';
 import { Input } from '@/components/ui/input';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useEffect } from 'react';
 
 export const SearchBar = () => {
   const { searchQuery, setSearchQuery, searchTracks } = useMusicStore();
+  const debouncedQuery = useDebounce(searchQuery, 500);
 
-  const handleSearch = (value: string) => {
-    setSearchQuery(value);
-    searchTracks(value);
-  };
+  useEffect(() => {
+    searchTracks(debouncedQuery);
+  }, [debouncedQuery, searchTracks]);
 
   const clearSearch = () => {
     setSearchQuery('');
-    searchTracks('');
   };
 
   return (
@@ -29,7 +30,7 @@ export const SearchBar = () => {
           type="text"
           placeholder="Zoek naar nummers, artiesten..."
           value={searchQuery}
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full h-14 pl-12 pr-12 text-lg bg-secondary border-none rounded-2xl placeholder:text-muted-foreground focus-visible:ring-primary focus-visible:ring-2"
         />
         <AnimatePresence>
