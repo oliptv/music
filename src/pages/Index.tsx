@@ -39,7 +39,12 @@ const Index = () => {
       </main>
 
       <MiniPlayer onExpand={() => setIsPlayerOpen(true)} />
-      <FullPlayer isOpen={isPlayerOpen} onClose={() => setIsPlayerOpen(false)} />
+      <FullPlayer 
+        isOpen={isPlayerOpen} 
+        onClose={() => setIsPlayerOpen(false)} 
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
